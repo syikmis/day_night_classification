@@ -1,5 +1,5 @@
 # day_night_classification
-Classify your pictures by classes day and night!
+Classify your pictures by classes day and night with a CNN implemented with keras and tensorflow as backend!
 
 ## Evaluate your images:
 ```

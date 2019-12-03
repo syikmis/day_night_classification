@@ -14,11 +14,11 @@ python partition.py --path path/to/your/image/directory
 Running the partition script results in two directiores in the results dir containing the final partition of the images.
   
 ## Train the model w/ your own day/night images:
-Your train data has to divided into two directories [../data/day, ../data/night]
+Your train data has to be divided into two directories [../data/day, ../data/night]
 ```
 python train.py --path path/to/your/train/data
 ```
-Running the train script results in weights.h5 file.
+Running the train script results in weights.h5 file and overwrites the previous one.
 
 ## Authors
 * Şiyar Yıkmış

@@ -15,7 +15,6 @@ from keras.preprocessing.image import ImageDataGenerator
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.model_selection import train_test_split
 
-FILES_DIR_BASE = '/disk/vanishing_data/fp173/training_data'
 model_name = 'day_night_classifier.h5'
 epochs = 20
 batch_size = 16

@@ -1,9 +1,9 @@
 # day_night_classification
 Classify your pictures by classes day and night with a CNN implemented with keras and tensorflow as backend!
 
-## Evaluate your images:
+## Predict your images:
 ```
-python evaluate.py --path path/to/your/image/directory
+python prediction.py --path path/to/your/image/directory
 ```
 Running the evaluate script results in a .csv-file composed of two columns (filename, classlabel). The pretrained model is used for this step.
 

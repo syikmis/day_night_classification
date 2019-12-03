@@ -68,5 +68,3 @@ if __name__ == '__main__':
     FLAGS = parser.parse_args()
 
     main(FLAGS)
-
-    main()

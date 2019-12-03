@@ -7,7 +7,6 @@ import bcolors
 import keras
 import numpy as np
 from PIL import Image
-from keras.callbacks import TensorBoard
 from keras.layers import Conv2D, MaxPooling2D
 from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.models import Sequential
@@ -156,7 +155,7 @@ def main(FLAGS):
     print(classification_report(y_test.argmax(axis=1), y_pred.argmax(axis=1), target_names=target) + bcolors.END)
     model.save(model_name)
     print(bcolors.OKMSG + '[INFO] Training done! Baaaam!' + bcolors.END)
-    print(bcolors.BLUE + 'Saved trained model at %s ' % model_path + bcolors.END)
+    print(bcolors.BLUE + 'Saved trained model' + bcolors.END)
 
     # Score trained model.
     scores = model.evaluate(x_test, y_test, verbose=1)
@@ -166,7 +165,7 @@ def main(FLAGS):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--path', type=str, help='base path to trainings data')
+    parser.add_argument('--path', type=str, help='base path to training data')
 
     FLAGS = parser.parse_args()
 

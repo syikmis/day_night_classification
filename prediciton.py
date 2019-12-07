@@ -1,76 +1,74 @@
 import argparse
 import bcolors
-import numpy as np
+import csv
+import glob
 import os
-from PIL import Image
-from keras.models import load_model
+import shutil
+import sys
 from timeit import default_timer as timer
 
-PRED_RESULT = 'day_night_prediction.csv'
+prediction_results = 'day_night_prediction.csv'
 
-weights = 'day_night_classifier.h5'
-image_width = 128
-image_heigth = 128
-input_shape = (image_width, image_heigth, 3)
-labels = {0: "day", 1: "night"}
+with open(prediction_results) as src:
+    reader = csv.reader(src, delimiter="\t")
+    prediction_dict = dict(reader)
 
 
-def image_to_input(path, file):
-    path_to_img = os.path.join(path, file)
-    try:
-        img = Image.open(path_to_img)
-    except:
-        return
-    img = img.convert('RGB')
-    img = img.resize((image_width, image_heigth), resample=Image.BICUBIC)
-    img = np.asarray(img) / 255
-    img = img.reshape(input_shape)
-    img = np.expand_dims(img, 0)
-    return img
-
-
-def main(FLAGS):
-    start = timer()
-    test_files = [f for f in os.listdir(FLAGS.path) if not f.startswith(".")]
-    len_files = len(test_files)
-    model = load_model(weights)
-    predictions = []
-    predictions_counter = {}
-    with open(PRED_RESULT, 'w') as dst:
-        i = 0
-        for file in test_files:
-            model_input = image_to_input(FLAGS.path, file)
-            if model_input is None:
-                continue
-            prediction = model.predict(model_input, steps=None)[0]
-            if prediction[0] == 1:
-                label = labels[0]
-            else:
-                label = labels[1]
-            predictions.append(label)
-            dst.write(f"{file}\t{label}\n")
-            if i % (len_files*0.05) == 0:
-                print(bcolors.WAITMSG + '[INFO] Evaluated %.2f percent of all test files'
-                      % (i / len(test_files) * 100) + bcolors.ENDC)
-
-            i += 1
-    for pred in predictions:
-        if pred in predictions_counter:
-            predictions_counter[pred] += 1
+def check_dirs(path):
+    print("Checking " + str(path))
+    if os.path.exists(path) and os.path.isdir(path):
+        if not os.listdir(path):
+            print("[INFO] Directory is empty")
         else:
-            predictions_counter[pred] = 1
-    print(bcolors.OKMSG + "[INFO] Frequencies of predictions: \n")
-    for key, value in predictions_counter.items():
-        print("{}: {}".format(key, value))
-    end = timer()
-    print("[INFO] Prediction for " + str(len(test_files)) + " took " + str(
-        round(end - start, 2)) + " seconds" + bcolors.END)
+            print("[INFO] Directory is not empty!")
+            boolean = input(
+                bcolors.WARN + "Do you want to delete all files? [true, false]\n" + bcolors.END).lower().strip()
+            if boolean == "true":
+                print(bcolors.OKMSG + "[INFO] Deleting directory content" + bcolors.END)
+                files = glob.glob(os.path.join(path, '*'))
+                for f in files:
+                    os.remove(f)
+            else:
+                print("Break!")
+                sys.exit()
+    else:
+        print("Given Directory don't exists! Creating directory...")
+        os.mkdir(path)
 
+path= "results"
+if not os.path.exists(path) and not os.path.isdir(path):
+    os.mkdir('results')
+day_path = 'results/day'
+night_path = 'results/night'
+parser = argparse.ArgumentParser()
+parser.add_argument('--path', type=str, help='path to img dir to partition')
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--path', type=str, help='path to img dir to classify')
+FLAGS = parser.parse_args()
 
-    FLAGS = parser.parse_args()
+check_dirs(day_path)
+check_dirs(night_path)
 
-    main(FLAGS)
+files = os.listdir(FLAGS.path)
+files_list = [f for f in files if not f.startswith(".")]
+i = 0
+start = timer()
+for file in files_list:
+    try:
+        prediction = prediction_dict[file]
+    except KeyError:
+        print(bcolors.WARN + "Key for " + file + " not found" + bcolors.END)
+        continue
+
+    if prediction == "night":
+        shutil.copy(os.path.join(FLAGS.path, file), night_path)
+    elif prediction == "day":
+        shutil.copy(os.path.join(FLAGS.path, file), day_path)
+
+    if i % round((len(files_list)*0.05)) == 0:
+        print(bcolors.WAITMSG + '[INFO] Partitioned %.2f percent of all test files'
+              % (i / len(files_list) * 100) + bcolors.ENDC)
+
+    i += 1
+end = timer()
+print(bcolors.OKMSG + "[INFO] The partitioning of " + str(len(files_list)) + " images took " + str(
+    round(end - start, 2)) + " seconds")
